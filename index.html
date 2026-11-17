@@ -165,10 +165,38 @@
         .badge-keluar { background: #fee2e2; color: #991b1b; }
         .badge-qris { background: #e0f2fe; color: #0369a1; }
 
-        .struk-box { background: #fffbeb; border: 2px dashed #cbd5e1; padding: 16px; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 13px; margin-top: 15px; }
-        .struk-header { text-align: center; border-bottom: 1px dashed #94a3b8; padding-bottom: 10px; margin-bottom: 10px; }
-        .struk-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .struk-total { border-top: 1px dashed #94a3b8; padding-top: 8px; margin-top: 8px; font-weight: bold; font-size: 15px; }
+        /* STRUK ALA INDOMARET / ALFAMART */
+        .struk-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            color: #000;
+            max-width: 320px;
+            margin: 15px auto 0 auto;
+        }
+        .struk-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
+        .struk-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .struk-total { border-top: 1px dashed #000; padding-top: 6px; margin-top: 6px; font-weight: bold; font-size: 14px; }
+
+        /* PENGATURAN KHUSUS SAAT DICETAK (PRINT STYLING) */
+        @media print {
+            body * { visibility: hidden; }
+            #area-struk, #area-struk * { visibility: visible; }
+            #area-struk {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 58mm; /* Ukuran standar kertas thermal mini kasir */
+                margin: 0;
+                padding: 5px;
+                border: none;
+                background: white;
+            }
+            .btn-primary { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -335,19 +363,19 @@
 
                 <button class="btn-primary" style="background:var(--hijau); color:white; margin-top:10px;" onclick="prosesBayarOtomatis()">✅ Selesaikan Pembayaran (Otomatis)</button>
 
-                <!-- STRUK -->
+                <!-- STRUK ALA MINIMARKET -->
                 <div id="area-struk" class="struk-box" style="display:none;">
                     <div class="struk-header">
-                        <strong id="struk-warung">WARUNG</strong><br>
-                        <small id="struk-waktu"></small><br>
-                        <span class="badge badge-qris" id="struk-tipe">TUNAI</span>
+                        <strong id="struk-warung" style="font-size:14px;">WARUNG</strong><br>
+                        <span id="struk-waktu" style="font-size:11px;"></span><br>
+                        <span id="struk-tipe" style="font-size:11px; font-weight:bold;">TUNAI</span>
                     </div>
                     <div id="struk-items"></div>
                     <div class="struk-total">
                         <div class="struk-row"><span>TOTAL:</span><span id="s-tot"></span></div>
                     </div>
-                    <div style="text-align:center; margin-top:10px; font-size:11px;">Terima Kasih!</div>
-                    <button class="btn-primary" style="margin-top:10px; font-size:12px;" onclick="window.print()">🖨️ Cetak Struk</button>
+                    <div style="text-align:center; margin-top:12px; font-size:11px;">*** TERIMA KASIH ***<br>SILAHKAN DATANG KEMBALI</div>
+                    <button class="btn-primary" style="margin-top:12px; font-size:12px;" onclick="window.print()">🖨️ Cetak Struk</button>
                 </div>
             </div>
         </div>
@@ -486,7 +514,6 @@
             { id: 4, nama: 'Nasi Goreng', kategori: 'Makanan', harga: 15000, stok: 15, terjual: 0, foto: '', emoji: '🍛' }
         ];
 
-        // Perbaikan: Jika akun baru dibuat/masuk, data kas dan transaksi wajib dikosongkan ke 0
         let dataKas = JSON.parse(localStorage.getItem('warung_kas_v4')) || [];
         let dataUtang = JSON.parse(localStorage.getItem('warung_utang_v4')) || [];
         let dataTitip = JSON.parse(localStorage.getItem('warung_titip_v4')) || [];
@@ -519,7 +546,6 @@
             if(id === 'beranda') renderTopProdukNominal();
         }
 
-        // --- AUTH (RESET DATA KAS SAAT DAFTAR/MASUK BARU) ---
         function bukaModalAuth() { document.getElementById('modal-auth').style.display = 'flex'; }
         function tutupModalAuth() { document.getElementById('modal-auth').style.display = 'none'; }
         function gantiTabAuth(m) {
@@ -588,7 +614,6 @@
             setTimeout(() => toastEl.classList.remove('show'), 3000);
         }
 
-        // --- KATALOG BERANDA ---
         let jumlahPilih = {};
 
         function filterKatalog(kat, btn) {
@@ -678,7 +703,6 @@
             toast('Pesanan Dikonfirmasi!', `Silakan selesaikan pembayaran.`);
         }
 
-        // --- PEMBAYARAN OTOMATIS ---
         function renderKeranjang() {
             const tbody = document.getElementById('tabel-keranjang');
             tbody.innerHTML = '';
@@ -732,7 +756,7 @@
             document.getElementById('area-struk').style.display = 'block';
             document.getElementById('struk-warung').innerText = userAktif ? userAktif.namaWarung.toUpperCase() : 'WARUNG';
             document.getElementById('struk-waktu').innerText = waktu;
-            document.getElementById('struk-tipe').innerText = metode.toUpperCase();
+            document.getElementById('struk-tipe').innerText = 'METODE: ' + metode.toUpperCase();
 
             const itemsDiv = document.getElementById('struk-items');
             itemsDiv.innerHTML = '';
@@ -747,7 +771,6 @@
             toast('Pembayaran Sukses!', 'Struk otomatis tercetak dan tersimpan.');
         }
 
-        // --- STOK ---
         function previewFoto(e) {
             const f = e.target.files[0];
             if(!f) return;
@@ -772,7 +795,6 @@
             toast('Berhasil!', 'Produk baru ditambahkan.');
         }
 
-        // --- KAS & BANK ---
         function tambahKasManual() {
             const ket = document.getElementById('kas-ket').value.trim();
             const tipe = document.getElementById('kas-jenis').value;
@@ -830,7 +852,6 @@
             }
         }
 
-        // --- UTANG ---
         function simpanUtang() {
             const n = document.getElementById('u-nama').value.trim();
             const k = document.getElementById('u-ket').value.trim();
@@ -865,7 +886,6 @@
             simpanStorage();
         }
 
-        // --- TITIPAN ---
         function simpanTitip() {
             const p = document.getElementById('t-penitip').value.trim();
             const m = document.getElementById('t-makanan').value.trim();
@@ -889,7 +909,6 @@
             simpanStorage();
         }
 
-        // --- RENDER TOP PRODUK ---
         function renderTopProdukNominal() {
             const container = document.getElementById('container-top-produk');
             container.innerHTML = '';
@@ -920,7 +939,6 @@
             });
         }
 
-        // --- RENDER SEMUA ---
         function renderSemua() {
             let masuk = 0, keluar = 0;
             let harian = 0;
@@ -959,7 +977,6 @@
             });
 
             const tUtang = document.getElementById('tabel-utang');
-            tUtang.innerHTML = /html/i.test('') ? '' : ''; // safety
             tUtang.innerHTML = '';
             dataUtang.forEach(u => {
                 const badgeStatus = u.status === 'Lunas' ? `<span class="badge badge-masuk">Lunas</span>` : `<span class="badge badge-keluar">Belum Lunas</span>`;
